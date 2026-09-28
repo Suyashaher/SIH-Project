@@ -1,0 +1,463 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String                    @id @default(uuid())
+  name                String
+  email               String                    @unique
+  password            String
+  role                Role                      @default(APPLICANT)
+  createdAt           DateTime                  @default(now())
+  isActive            Boolean                   @default(true)
+  applications        Application[]
+  officerApplications Application[]             @relation("OfficerApplications")
+  assignedSchemes     OfficerSchemeAssignment[]
+  selectionDecisions     SelectionDecision[]
+  fellowshipRecords      FellowshipRecord[]
+  reviewedPostDocs       PostSelectionDocument[] @relation("DocReviewer")
+  sentCommunications     FellowshipCommunication[]
+  notifications          Notification[]
+  preference             NotificationPreference?
+
+  @@map("users")
+}
+
+model Scheme {
+  id                   String                      @id @default(uuid())
+  name                 String
+  description          String?
+  isActive             Boolean                     @default(true)
+  createdAt            DateTime                    @default(now())
+  updatedAt            DateTime                    @updatedAt
+  totalSeats           Int?
+  applications         Application[]
+  assignedOfficers     OfficerSchemeAssignment[]
+  applicationFields    SchemeApplicationField[]
+  documentRequirements SchemeDocumentRequirement[]
+  eligibilityRules     SchemeEligibilityRule[]
+  selectionCriteria    SchemeSelectionCriteria[]
+  stageBenchmarks      StageDurationBenchmark[]
+  fellowshipRecords    FellowshipRecord[]
+
+  @@map("schemes")
+}
+
+model SchemeEligibilityRule {
+  id        String   @id @default(uuid())
+  schemeId  String
+  fieldName String
+  operator  String
+  value     String
+  createdAt DateTime @default(now())
+  scheme    Scheme   @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+
+  @@map("scheme_eligibility_rules")
+}
+
+model SchemeDocumentRequirement {
+  id                   String                @id @default(uuid())
+  schemeId             String
+  documentName         String
+  isMandatory          Boolean               @default(true)
+  createdAt            DateTime              @default(now())
+  applicationDocuments ApplicationDocument[]
+  scheme               Scheme                @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+
+  @@map("scheme_document_requirements")
+}
+
+model SchemeApplicationField {
+  id           String                  @id @default(uuid())
+  schemeId     String
+  fieldLabel   String
+  fieldType    FieldType               @default(TEXT)
+  isRequired   Boolean                 @default(true)
+  options      String?
+  displayOrder Int                     @default(0)
+  createdAt    DateTime                @default(now())
+  fieldValues  ApplicationFieldValue[]
+  scheme       Scheme                  @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+
+  @@map("scheme_application_fields")
+}
+
+model Application {
+  id                  String                     @id @default(uuid())
+  applicantId         String
+  schemeId            String
+  status              ApplicationStatus          @default(DRAFT)
+  submittedAt         DateTime?
+  createdAt           DateTime                   @default(now())
+  updatedAt           DateTime                   @updatedAt
+  assignedOfficerId   String?
+  officerRemarks      String?
+  scrutinyCompletedAt      DateTime?
+  predictedCompletionDate  DateTime?
+  predictedDaysRemaining   Float?
+  predictionMethod         PredictionMethod?
+  predictionLastUpdatedAt  DateTime?
+  documents                ApplicationDocument[]
+  fieldValues         ApplicationFieldValue[]
+  selectionScore      ApplicationSelectionScore?
+  statusHistory       ApplicationStatusHistory[]
+  applicant           User                       @relation(fields: [applicantId], references: [id])
+  assignedOfficer     User?                      @relation("OfficerApplications", fields: [assignedOfficerId], references: [id])
+  scheme              Scheme                     @relation(fields: [schemeId], references: [id])
+  deficiencies        DeficiencyRequest[]
+  selectionDecisions  SelectionDecision[]
+  fellowshipRecord    FellowshipRecord?
+
+  @@map("applications")
+}
+
+model ApplicationFieldValue {
+  id            String                 @id @default(uuid())
+  applicationId String
+  fieldId       String
+  value         String
+  createdAt     DateTime               @default(now())
+  application   Application            @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  field         SchemeApplicationField @relation(fields: [fieldId], references: [id])
+
+  @@unique([applicationId, fieldId])
+  @@map("application_field_values")
+}
+
+model ApplicationDocument {
+  id                    String                    @id @default(uuid())
+  applicationId         String
+  documentRequirementId String
+  fileUrl               String
+  fileName              String
+  status                DocumentStatus            @default(PENDING)
+  uploadedAt            DateTime                  @default(now())
+  createdAt             DateTime                  @default(now())
+  aiFlagReason          String?
+  aiStatus              AiDocumentStatus          @default(PENDING)
+  confidenceScore       Float?
+  extractedFields       String?
+  extractedText         String?
+  matchResult           String?
+  processedAt           DateTime?
+  originalAiStatus      AiDocumentStatus?
+  overriddenById        String?
+  overrideReason        String?
+  application           Application               @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  documentRequirement   SchemeDocumentRequirement @relation(fields: [documentRequirementId], references: [id])
+
+  @@map("application_documents")
+}
+
+model OfficerSchemeAssignment {
+  id         String   @id @default(uuid())
+  officerId  String
+  schemeId   String
+  assignedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  officer    User     @relation(fields: [officerId], references: [id], onDelete: Cascade)
+  scheme     Scheme   @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+
+  @@unique([officerId, schemeId])
+  @@map("officer_scheme_assignments")
+}
+
+model DeficiencyRequest {
+  id            String           @id @default(uuid())
+  applicationId String
+  documentId    String?
+  reason        String
+  status        DeficiencyStatus @default(OPEN)
+  raisedById    String
+  raisedAt      DateTime         @default(now())
+  resolvedAt    DateTime?
+  application   Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("deficiency_requests")
+}
+
+model ApplicationStatusHistory {
+  id             String      @id @default(uuid())
+  applicationId  String
+  previousStatus String
+  newStatus      String
+  changedById    String
+  remarks        String?
+  changedAt      DateTime    @default(now())
+  application    Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("application_status_history")
+}
+
+model StageDurationBenchmark {
+  id                  String   @id @default(uuid())
+  schemeId            String
+  scheme              Scheme   @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+  stage               String
+  averageDurationDays Float
+  sampleSize          Int      @default(0)
+  lastUpdatedAt       DateTime @default(now())
+
+  @@unique([schemeId, stage])
+  @@map("stage_duration_benchmarks")
+}
+
+model SchemeSelectionCriteria {
+  id             String         @id @default(uuid())
+  schemeId       String
+  criteriaName   String
+  fieldSource    String
+  weightage      Float
+  scoreDirection ScoreDirection @default(HIGHER_IS_BETTER)
+  createdAt      DateTime       @default(now())
+  scheme         Scheme         @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+
+  @@map("scheme_selection_criteria")
+}
+
+model ApplicationSelectionScore {
+  id              String      @id @default(uuid())
+  applicationId   String      @unique
+  calculatedScore Float
+  scoreBreakdown  String?
+  rank            Int?
+  calculatedAt    DateTime    @default(now())
+  application     Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("application_selection_scores")
+}
+
+model SelectionDecision {
+  id            String      @id @default(uuid())
+  applicationId String
+  decidedById   String
+  decision      String
+  remarks       String?
+  decidedAt     DateTime    @default(now())
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  decidedBy     User        @relation(fields: [decidedById], references: [id])
+
+  @@map("selection_decisions")
+}
+
+model FellowshipRecord {
+  id                      String                    @id @default(uuid())
+  applicationId           String                    @unique
+  application             Application               @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicantId             String
+  applicant               User                      @relation(fields: [applicantId], references: [id])
+  schemeId                String
+  scheme                  Scheme                    @relation(fields: [schemeId], references: [id])
+  fellowshipStatus        FellowshipStatus          @default(ACTIVE)
+  startDate               DateTime                  @default(now())
+  expectedEndDate         DateTime?
+  disbursementFrequency   DisbursementFrequency?
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
+  disbursements           DisbursementRecord[]
+  documentRequirements    PostSelectionDocument[]
+  communications          FellowshipCommunication[]
+
+  @@map("fellowship_records")
+}
+
+model DisbursementRecord {
+  id                  String              @id @default(uuid())
+  fellowshipRecordId  String
+  fellowshipRecord    FellowshipRecord    @relation(fields: [fellowshipRecordId], references: [id], onDelete: Cascade)
+  installmentNumber   Int
+  amount              Float
+  status              DisbursementStatus  @default(PENDING)
+  dueDate             DateTime
+  processedDate       DateTime?
+  remarks             String?
+  createdAt           DateTime            @default(now())
+
+  @@map("disbursement_records")
+}
+
+model PostSelectionDocument {
+  id                  String           @id @default(uuid())
+  fellowshipRecordId  String
+  fellowshipRecord    FellowshipRecord @relation(fields: [fellowshipRecordId], references: [id], onDelete: Cascade)
+  documentType        String
+  dueDate             DateTime
+  status              PostDocStatus    @default(PENDING)
+  fileUrl             String?
+  submittedAt         DateTime?
+  reviewedById        String?
+  reviewedBy          User?            @relation("DocReviewer", fields: [reviewedById], references: [id])
+  createdAt           DateTime         @default(now())
+  reminderSentAt      DateTime?
+
+  @@map("post_selection_documents")
+}
+
+model FellowshipCommunication {
+  id                  String           @id @default(uuid())
+  fellowshipRecordId  String
+  fellowshipRecord    FellowshipRecord @relation(fields: [fellowshipRecordId], references: [id], onDelete: Cascade)
+  message             String
+  sentById            String
+  sentBy              User             @relation(fields: [sentById], references: [id])
+  sentAt              DateTime         @default(now())
+  isReadByApplicant   Boolean          @default(false)
+
+  @@map("fellowship_communications")
+}
+
+model AIFeedbackLog {
+  id                      String   @id @default(uuid())
+  applicationDocumentId   String
+  documentType            String
+  originalAiStatus        String
+  originalConfidenceScore Float?
+  originalMatchResult     String?
+  officerFinalStatus      String
+  overrideReason          String?
+  officerId               String
+  wasOverridden           Boolean
+  createdAt               DateTime @default(now())
+
+  @@map("ai_feedback_logs")
+}
+
+model DocumentTypeThreshold {
+  id                         String    @id @default(uuid())
+  documentType               String    @unique
+  currentConfidenceThreshold Float     @default(80)
+  previousThreshold          Float     @default(80)
+  overrideRate               Float     @default(0)
+  lastRecalculatedAt         DateTime?
+  sampleSize                 Int       @default(0)
+
+  @@map("document_type_thresholds")
+}
+
+model Notification {
+  id                String           @id @default(uuid())
+  userId            String
+  title             String
+  message           String
+  type              NotificationType @default(GENERAL)
+  relatedEntityType String?
+  relatedEntityId   String?
+  isRead            Boolean          @default(false)
+  emailSent         Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  emailEnabled Boolean  @default(true)
+  inAppEnabled Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
+}
+
+enum Role {
+  ADMIN
+  OFFICER
+  APPLICANT
+}
+
+enum FieldType {
+  TEXT
+  NUMBER
+  DATE
+  DROPDOWN
+  FILE
+}
+
+enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_VERIFICATION
+  DEFICIENT
+  UNDER_SCRUTINY
+  SELECTED
+  REJECTED
+  READY_FOR_SELECTION
+  WAITLISTED
+}
+
+enum DocumentStatus {
+  PENDING
+  VERIFIED
+  FLAGGED
+}
+
+enum AiDocumentStatus {
+  PENDING
+  VERIFIED
+  FLAGGED
+  FAILED
+}
+
+enum DeficiencyStatus {
+  OPEN
+  RESOLVED
+}
+
+enum PredictionMethod {
+  RULE_BASED
+  ML_MODEL
+}
+
+enum FellowshipStatus {
+  ACTIVE
+  SUSPENDED
+  COMPLETED
+  TERMINATED
+}
+
+enum DisbursementFrequency {
+  ONE_TIME
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+}
+
+enum DisbursementStatus {
+  PENDING
+  PROCESSED
+  DELAYED
+  ON_HOLD
+}
+
+enum PostDocStatus {
+  PENDING
+  SUBMITTED
+  APPROVED
+  OVERDUE
+}
+
+enum ScoreDirection {
+  HIGHER_IS_BETTER
+  LOWER_IS_BETTER
+}
+
+enum NotificationType {
+  STATUS_CHANGE
+  DEFICIENCY_RAISED
+  DOCUMENT_FLAGGED
+  DEFICIENCY_RESOLVED
+  SELECTION_DECISION
+  DISBURSEMENT_UPDATE
+  FELLOWSHIP_STATUS_CHANGE
+  FELLOWSHIP_COMMUNICATION
+  DOCUMENT_REQUIREMENT_DUE
+  GENERAL
+}
