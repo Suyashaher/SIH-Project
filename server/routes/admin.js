@@ -22,6 +22,7 @@ const {
   updateTotalSeats,
 } = require('../controllers/selectionController');
 const { runReminders } = require('../controllers/notificationController');
+const { getLeaderboard } = require('../services/leaderboardService');
 
 router.use(verifyToken, requireRole('ADMIN'));
 
@@ -34,6 +35,21 @@ router.put('/officers/:id/schemes', updateOfficerSchemes);
 
 // === Applications ===
 router.get('/applications', getApplications);
+
+// === Officer Leaderboard ===
+router.get('/leaderboard', async (req, res) => {
+  try {
+    const period = (req.query.period || 'WEEKLY').toUpperCase();
+    if (!['WEEKLY', 'MONTHLY', 'ALL_TIME'].includes(period)) {
+      return res.status(400).json({ message: 'period must be WEEKLY, MONTHLY, or ALL_TIME' });
+    }
+    const leaderboard = await getLeaderboard(period);
+    res.json({ leaderboard, period });
+  } catch (error) {
+    console.error('Leaderboard error:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
 
 // === Scheme CRUD ===
 router.post('/schemes', validateScheme, createScheme);

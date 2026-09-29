@@ -24,6 +24,7 @@ model User {
   sentCommunications     FellowshipCommunication[]
   notifications          Notification[]
   preference             NotificationPreference?
+  leaderboardSeeds       OfficerLeaderboardSeed[]
 
   @@map("users")
 }
@@ -447,6 +448,30 @@ enum PostDocStatus {
 enum ScoreDirection {
   HIGHER_IS_BETTER
   LOWER_IS_BETTER
+}
+
+model OfficerLeaderboardSeed {
+  id                     String            @id @default(uuid())
+  officerId              String
+  officer                User              @relation(fields: [officerId], references: [id], onDelete: Cascade)
+  period                 LeaderboardPeriod
+  periodLabel            String
+  applicationsCompleted  Int
+  avgProcessingHours     Float
+  accuracyRate           Float
+  deficienciesRaised     Int               @default(0)
+  overrideCount          Int               @default(0)
+  isMockData             Boolean           @default(true)
+  createdAt              DateTime          @default(now())
+
+  @@unique([officerId, period, periodLabel])
+  @@map("officer_leaderboard_seeds")
+}
+
+enum LeaderboardPeriod {
+  WEEKLY
+  MONTHLY
+  ALL_TIME
 }
 
 enum NotificationType {

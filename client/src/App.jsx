@@ -30,6 +30,7 @@ import MyFellowship from './pages/applicant/MyFellowship';
 import VerificationAnalytics from './pages/admin/VerificationAnalytics';
 import SelectionAnalytics from './pages/admin/SelectionAnalytics';
 import OfficerPerformance from './pages/admin/OfficerPerformance';
+import OfficerLeaderboard from './pages/admin/OfficerLeaderboard';
 import FellowshipAnalytics from './pages/admin/FellowshipAnalytics';
 import ExportReports from './pages/admin/ExportReports';
 import Notifications from './pages/Notifications';
@@ -112,6 +113,10 @@ function App() {
               <Route
                 path="/admin/analytics/officers"
                 element={<ProtectedRoute allowedRoles={['ADMIN']}><OfficerPerformance /></ProtectedRoute>}
+              />
+              <Route
+                path="/admin/analytics/leaderboard"
+                element={<ProtectedRoute allowedRoles={['ADMIN']}><OfficerLeaderboard /></ProtectedRoute>}
               />
               <Route
                 path="/admin/analytics/fellowships"

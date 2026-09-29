@@ -7,42 +7,65 @@ const HomePage = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Hero Section */}
       <div 
-        className="relative bg-[#0f172a] flex-1 min-h-[60vh] flex flex-col justify-center"
+        className="relative w-full h-[95vh] min-h-[600px] flex flex-col justify-center overflow-hidden border-b-[6px] border-[#ff9933]"
         style={{ 
           backgroundColor: '#0f172a',
-          backgroundImage: 'linear-gradient(to right, #0f172a 0%, rgba(15, 23, 42, 0.95) 40%, rgba(15, 23, 42, 0.6) 70%, rgba(15, 23, 42, 0) 100%), url("/images/gov-hero.jpg")', 
+          backgroundImage: 'linear-gradient(to right, #0f172a 0%, rgba(15, 23, 42, 0.95) 45%, rgba(15, 23, 42, 0.4) 75%, rgba(15, 23, 42, 0.1) 100%), url("/images/gov-hero.jpg")', 
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
         }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32 w-full relative z-10">
-          <div className="max-w-3xl">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4">
-              <span className="block text-white">Empowering</span>
-              <span className="block text-[#10b981] mt-1">ST Students</span>
-              <span className="block text-white mt-1">Nationwide</span>
+        
+        {/* Abstract Tricolor Glow Orbs (Subtle over dark background) */}
+        <div className="absolute top-[-10%] left-[-10%] w-[30rem] h-[30rem] bg-[#ff9933] rounded-full mix-blend-screen filter blur-[128px] opacity-10 pointer-events-none"></div>
+        <div className="absolute bottom-[-10%] left-[20%] w-[30rem] h-[30rem] bg-[#138808] rounded-full mix-blend-screen filter blur-[128px] opacity-10 pointer-events-none"></div>
+
+
+
+        {/* PM Modi Image Anchor (Enlarged & Blended) */}
+        <div className="absolute bottom-0 right-0 w-full md:w-[70%] lg:w-[65%] h-full flex justify-end items-end z-0 opacity-40 md:opacity-[0.85] pointer-events-none">
+           <img 
+             src="/images/pm-modi.png" 
+             alt="PM Narendra Modi" 
+             className="h-full object-contain object-right-bottom origin-bottom-right scale-105 xl:scale-110 drop-shadow-2xl"
+             style={{
+               maskImage: 'linear-gradient(to right, transparent 0%, black 35%, black 100%)',
+               WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 35%, black 100%)'
+             }}
+           />
+        </div>
+
+        {/* Deep navy overlay gradient to perfectly fade the image into the dark background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0f172a] via-[#0f172a]/60 to-transparent z-0 pointer-events-none w-full mix-blend-multiply"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
+          <div className="max-w-2xl">
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-4 leading-tight">
+              <span className="block text-[#ff9933] drop-shadow-md">Empowering</span>
+              <span className="block text-white mt-2 drop-shadow-md">ST Students</span>
+              <span className="block text-[#10b981] mt-2 drop-shadow-md">Nationwide</span>
             </h1>
             
-            <p className="mt-6 text-lg sm:text-xl text-gray-300 max-w-2xl leading-relaxed">
+            <p className="mt-8 text-lg sm:text-xl text-gray-300 max-w-xl leading-relaxed font-medium">
               A unified digital platform for Scheduled Tribe students to access scholarships and fellowships — from application to selection to ongoing support. Building an inclusive India through transparent, AI-assisted governance.
             </p>
             
-            <div className="mt-10 flex flex-col sm:flex-row gap-4">
+            <div className="mt-12 flex flex-col sm:flex-row gap-5">
               <Link to="/applicant/schemes">
                 <Button 
                   type="primary" 
                   size="large" 
-                  className="bg-[#6366f1] hover:bg-[#4f46e5] border-none shadow-lg h-14 px-8 text-lg font-semibold flex items-center justify-center w-full sm:w-auto"
+                  className="bg-[#6366f1] hover:bg-[#4f46e5] border-none shadow-xl h-14 px-8 text-lg font-semibold flex items-center justify-center w-full sm:w-auto"
                 >
                   Explore Schemes <ArrowRightOutlined className="ml-2" />
                 </Button>
               </Link>
               <Link to="/login">
                 <Button 
-                  ghost 
+                  ghost
                   size="large" 
-                  className="h-14 px-8 text-lg font-semibold border-2 border-white text-white hover:text-[#818cf8] hover:border-[#818cf8] flex items-center justify-center w-full sm:w-auto"
+                  className="h-14 px-8 text-lg font-semibold border-2 border-white text-white hover:text-[#818cf8] hover:border-[#818cf8] flex items-center justify-center w-full sm:w-auto shadow-sm"
                 >
                   Track Application
                 </Button>

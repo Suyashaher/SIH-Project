@@ -22,6 +22,7 @@ export const adminService = {
   getDeficiencyStats: () => API.get('/admin/dashboard/deficiency-stats'),
   getSelectionStats: () => API.get('/admin/dashboard/selection-stats'),
   getOfficerStats: () => API.get('/admin/dashboard/officer-stats'),
+  getOfficerLeaderboard: (period) => API.get('/admin/leaderboard', { params: { period } }),
   getFellowshipStats: () => API.get('/admin/dashboard/fellowship-stats'),
   exportData: (type, schemeId) => API.get('/admin/dashboard/export', {
     params: { type, ...(schemeId ? { schemeId } : {}) },

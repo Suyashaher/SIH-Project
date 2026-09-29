@@ -63,6 +63,7 @@ const MainLayout = () => {
             { key: 'ana-verification', icon: <SafetyCertificateOutlined />, label: <Link to="/admin/analytics/verification">Verification</Link> },
             { key: 'ana-selection', icon: <TrophyOutlined />, label: <Link to="/admin/analytics/selection">Selection</Link> },
             { key: 'ana-officers', icon: <TeamOutlined />, label: <Link to="/admin/analytics/officers">Officers</Link> },
+            { key: 'ana-leaderboard', icon: <TrophyOutlined />, label: <Link to="/admin/analytics/leaderboard">Leaderboard</Link> },
             { key: 'ana-fellowships', icon: <TrophyOutlined />, label: <Link to="/admin/analytics/fellowships">Fellowships</Link> },
             { key: 'ana-processing', icon: <BarChartOutlined />, label: <Link to="/admin/processing-analytics">Processing ETA</Link> },
             { key: 'ana-ai', icon: <ExperimentOutlined />, label: <Link to="/admin/ai-insights">AI Insights</Link> },

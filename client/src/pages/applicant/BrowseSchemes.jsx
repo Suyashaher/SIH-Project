@@ -119,6 +119,7 @@ const BrowseSchemes = () => {
             <Card
               hoverable
               className="h-full flex flex-col"
+              styles={{ body: { flex: 1, display: 'flex', flexDirection: 'column' } }}
               actions={[
                 <Button type="link" icon={<EyeOutlined />} onClick={() => handleViewDetails(scheme.id)}>
                   View Details
