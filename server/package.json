@@ -13,7 +13,8 @@
     "seed:schemes": "node prisma/seedSchemes.js",
     "seed:feedback": "node prisma/seedFeedback.js",
     "seed:selection": "node prisma/seedSelection.js",
-    "seed:eta": "node prisma/seedEtaData.js"
+    "seed:eta": "node prisma/seedEtaData.js",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
